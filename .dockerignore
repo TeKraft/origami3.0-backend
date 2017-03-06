@@ -1,0 +1,6 @@
+mongo-data
+origami-mongo
+docker-compose.yml
+Dockerfile
+.env
+.git

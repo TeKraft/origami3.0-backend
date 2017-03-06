@@ -1,0 +1,20 @@
+version: "2"
+
+services:
+  origami-api:
+    build: .
+    ports:
+      - 5000:5000
+    volumes:
+      - ./server.js:/usr/src/app/server.js
+    env_file: .env
+    depends_on:
+      - db
+
+  db:
+    build:
+      context: ./origami-mongo
+    volumes:
+      - ./mongo-data:/data/db
+    env_file: .env
+    command: --auth --storageEngine wiredTiger
