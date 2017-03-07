@@ -302,17 +302,7 @@ server.post('/register', restify.bodyParser(), function(req, res) {
     user.info = req.body.info;
 
     user.setPassword(req.body.password);
-    console.log("user");
-    console.log(user);
-    // user.save(function(err) {
-    //   console.log("save success");
-    //     var token;
-    //     token = user.generateJwt();
-    //     res.status(200);
-    //     res.json({
-    //         "token" : token
-    //     });
-    // });
+    console.log("user: " + user);
 
     user.save(user, function(err, data) {
       console.log("save success");
@@ -332,7 +322,9 @@ server.post('/login', function(req, res) {
     passport.authenticate('local', function(err, user, info){
         var token;
         console.log("In passport.authenticate");
-        console.log("token:" + token);
+        console.log("token: " + token);
+        console.log("user: " + user);
+        console.log("Info: " + info);
 
         // If Passport throws/catches an error
         if (err) {
@@ -340,13 +332,12 @@ server.post('/login', function(req, res) {
             return;
         }
         console.log("After first if");
-        console.log("user:" + user);
 
         // If a user is found
         if(user){
             console.log("user is found");
             token = user.generateJwt();
-            console.log("token:" + token);
+            console.log("token: " + token);
             res.status(200);
             res.json({
                 "token" : token
@@ -376,7 +367,7 @@ server.get("/users", function (req, res, next) {
     return next();
 });
 
-/*server.get('/profile', auth, function(req, res) {
+server.get('/profile', auth, function(req, res) {
 
     if (!req.payload._id) {
         res.status(401).json({
@@ -393,7 +384,7 @@ server.get("/users", function (req, res, next) {
             });
     }
 
-});*/
+});
 
 server.get('/profile/:id', function(req, res){
 
