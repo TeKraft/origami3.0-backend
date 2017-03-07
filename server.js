@@ -322,27 +322,19 @@ server.post('/register', restify.bodyParser(), function(req, res) {
     });
 });
 
-//Get all the games
-server.get("/users", function (req, res, next) {
-  db.users.find(function (err, users) {
-    res.writeHead(200, {
-      'Content-Type': 'application/json;charset=utf-8'
-    });
-    res.end(JSON.stringify(users));
-  });
-
-  return next();
-});
-
 server.post('/login', function(req, res) {
+    console.log("LoginServer");
     passport.authenticate('local', function(err, user, info){
         var token;
+        console.log("In passport.authenticate");
 
         // If Passport throws/catches an error
         if (err) {
             res.status(404).json(err);
             return;
         }
+        console.log("After first if");
+        console.log(user);
 
         // If a user is found
         if(user){
@@ -352,13 +344,29 @@ server.post('/login', function(req, res) {
                 "token" : token
             });
             console.log(token);
-        } else {
+        }
+        else {
+            console.log("In else");
             // If user is not found
             res.status(401).json(info);
         }
+        console.log("After second if/else");
     })(req, res);
+    console.log("After Passport");
 
 })
+
+//Get all the users
+server.get("/users", function (req, res, next) {
+    db.users.find(function (err, users) {
+        res.writeHead(200, {
+            'Content-Type': 'application/json;charset=utf-8'
+        });
+        res.end(JSON.stringify(users));
+    });
+
+    return next();
+});
 
 server.get('/profile', auth, function(req, res) {
 
