@@ -331,7 +331,7 @@ server.get('/profile', auth, function(req, res) {
     console.log("serverprofile");
     if (!req.payload._id) {
         console.log("unauthorizedError");
-        res.status(401).json({
+        res.send(401, {
             "message" : "UnauthorizedError: private profile"
         });
     } else {
@@ -339,7 +339,7 @@ server.get('/profile', auth, function(req, res) {
             console.log("find by ID");
                 if(err){
                     console.log("find by ID ERRor")
-                    res.status(401).json("couldnt load profile");
+                    res.send(401, "couldnt load profile");
                 } else {
                     console.log("found ID")
                     res.send(200, user);
@@ -349,33 +349,31 @@ server.get('/profile', auth, function(req, res) {
 });
 
 server.get('/profile/:id', function(req, res){
-
-    User
-        .findById(req.params.id, function(err, obj){
+    User.findById(req.params.id, function(err, obj){
             if(err){
-                res.status(401).json("could not load the profile");
+                res.send(401, "could not load the profile");
             } else {
-                res.status(200).json(obj);
+                res.send(200, obj);
             }
         });
 });
 
 server.post('/profileUpdate', auth, function(req, res) {
     if (!req.payload._id) {
-        res.status(401).json({
+        res.send(401, {
             "message": "UnauthorizedError: cannot update profile without being logged in to it"
         });
     } else{
         User.findByIdAndUpdate(req.payload._id, req.body, {runValidators: true, upsert: true})
             .exec(function (err, user) {
-                res.status(200).json(user);
+                res.send(200, user);
             })
     }
 });
 
 server.post('/profileDelete', auth, function (req, res) {
     if (!req.payload._id) {
-        res.status(401).json({
+        res.send(401, {
             "message": "UnauthorizedError: cannot delete profile without being logged in to it"
         });
     } else {
