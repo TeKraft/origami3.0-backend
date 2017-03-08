@@ -358,7 +358,7 @@ server.get('/profile/:id', function(req, res){
         });
 });
 
-server.post('/profileUpdate', auth, function(req, res) {
+server.post('/profileUpdate', restify.bodyParser(), auth, function(req, res) {
     if (!req.payload._id) {
         res.send(401, {
             "message": "UnauthorizedError: cannot update profile without being logged in to it"
@@ -371,7 +371,7 @@ server.post('/profileUpdate', auth, function(req, res) {
     }
 });
 
-server.post('/profileDelete', auth, function (req, res) {
+server.post('/profileDelete', restify.bodyParser(), auth, function (req, res) {
     if (!req.payload._id) {
         res.send(401, {
             "message": "UnauthorizedError: cannot delete profile without being logged in to it"
@@ -380,13 +380,12 @@ server.post('/profileDelete', auth, function (req, res) {
         User.findById(req.payload._id)
             .exec(function (err, value) {
                 if(err) {
-                    res.status(401).json({
+                    res.send(401, {
                         "message": "DeleteError: could not delete feature"
                     });
                 } else {
-                    console.log('feature removed (logging just for testing)');
                     value.remove();
-                    res.status(200).send('removed Feature');
+                    res.send(200, 'removed Feature');
                 }
 
             });
