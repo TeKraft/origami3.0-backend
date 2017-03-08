@@ -270,6 +270,114 @@ server.post("/games/player", restify.bodyParser(), function (req, res, next) {
 
 //****************************************************************************************
 //****************************************************************************************
+//                                  account gamemanagement
+//****************************************************************************************
+//****************************************************************************************
+var BaseGame = mongoose.model('BaseGame');
+var Team = mongoose.model('Team');
+
+//Get all the games
+server.get('/baseGames', function (req, res, next) {
+  BaseGame.find(function (err, games) {
+    res.writeHead(200, {
+      'Content-Type': 'application/json;charset=utf-8'
+    });
+    res.end(JSON.stringify(games));
+  });
+
+  return next();
+});
+
+//Get all base games created by logged user
+server.get('/baseGames/:creator', function (req, res, next) {
+  console.log("/baseGames");
+  console.log(req.params.creator);
+
+  BaseGame.find({ 'creator': req.params.creator }, function (err, games) {
+    res.writeHead(200, {
+      'Content-Type': 'application/json;charset=utf-8'
+    });
+    res.end(JSON.stringify(games));
+  });
+
+  return next();
+});
+
+// Get only one certain game created by user
+server.get("/games/item/:name/:creator", function (req, res, next) {
+  BaseGames.find({ "name": req.params.name , 'creator' : req.params.creator}, function (err, games) {
+    res.writeHead(200, {
+      'Content-Type': 'application/json; charset=utf-8'
+    });
+    res.end(JSON.stringify(games));
+  });
+  return next();
+});
+
+// Add new game to the list
+server.post("/baseGames/baseItem", restify.bodyParser(), function (req, res, next) {
+  var item = req.params;
+  console.log("baseGames/baseItem");
+  console.log(item);
+
+  // var baseGame = new BaseGame();
+  //
+  // baseGame.name = gametitle;
+  // baseGame.team = teamnamen;
+  // baseGame.baseAmount = anzahleBasen;
+  // baseGame.tasks = aufgabe;
+  // baseGame.creator = creator;
+  // baseGame.uniqueKey = creator+gametitle;
+  // baseGame.info = info;
+
+  BaseGame.save(item, function (err, data) {
+    console.log("data");
+    console.log(data);
+    res.writeHead(200, {
+      'Content-Type': 'application/json; charset=utf-8'
+    });
+    res.end(JSON.stringify(data));
+  });
+  return next();
+});
+
+// // Delete certain game
+// server.del("/baseGames/baseItem/:name", function (req, res, next) {
+//   console.log("DELETE request for GAME [" + req.params.name + "] from HOST [" + req.headers.host + "]");
+//   BaseGame.remove({ 'name': req.params.name }, function (err, data) {
+//     res.writeHead(200, {
+//       'Content-Type': 'application/json; charset=utf-8'
+//     });
+//     res.end(JSON.stringify(data));
+//   });
+//   return next();
+// });
+
+
+/*server.del("baseGames/baseItem/:id", function (req, res, next) {
+  Game.remove({ 'name': req.params.name }, function (err, data) {
+    res.writeHead(200, {
+      'Content-Type': 'application/json; charset=utf-8'
+    });
+    res.end(JSON.stringify(data));
+  });
+  return next();
+});*/
+
+// Get only game metadata from the database - getting all games was shown to be slow
+server.get("/baseGames/metadata", function (req, res, next) {
+  console.log("/baseGames/metadata");
+  // BaseGame.find({}, { name: 1, description: 1, timecompl: 1, difficulty: 1 }, function (err, data) {
+  //   res.writeHead(200, {
+  //     'Content-Type': 'application/json;charset=utf-8'
+  //   });
+  //   res.end(JSON.stringify(data));
+  // });
+  // return next();
+});
+
+//****************************************************************************************
+//****************************************************************************************
 //                                  Usermanagement
 //****************************************************************************************
 //****************************************************************************************
