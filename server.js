@@ -79,7 +79,7 @@ mongoose.connection.on('connected', function() {
 
 // use this function to retry if a connection cannot be established immediately
 (function connectWithRetry () {
-  db = mongojs(cfg.dbconnectionstring, ['games', 'users']);
+  db = mongojs(cfg.dbconnectionstring, ['games']);
   db.on('error', function (err) {
     console.error('Failed to connect to mongo on startup - retrying in 5 sec', err);
     setTimeout(connectWithRetry, 5000);
@@ -317,7 +317,7 @@ server.post('/login', restify.bodyParser(), function(req, res) {
 
 //Get all the users
 server.get("/users", function (req, res, next) {
-    db.users.find(function (err, users) {
+    User.find(function (err, users) {
         res.writeHead(200, {
             'Content-Type': 'application/json;charset=utf-8'
         });
