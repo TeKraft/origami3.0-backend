@@ -300,9 +300,8 @@ server.post('/register', restify.bodyParser(), function(req, res) {
 
 server.post('/login', restify.bodyParser(), function(req, res) {
     var token;
-    var emil = req.body.email;
 
-    User.findOne({ email: emil }, function (err, user) {
+    User.findOne({ email: req.body.email }, function (err, user) {
         if(err){return done (err)};
         if (!user.validPassword(req.body.password)) { return done(null, false, {
             message: 'Password ist wrong'
