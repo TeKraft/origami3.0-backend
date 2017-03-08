@@ -13,7 +13,7 @@ var server = restify.createServer();
 // Usermanagement
 var mongoose = require('mongoose');
 var jwt = require('restify-jwt');
-require('./usermanagement/users');
+require('./usermanagement/schema');
 var User = mongoose.model('User');
 var auth = jwt({
     secret: 'MY_SECRET',
