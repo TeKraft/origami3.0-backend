@@ -11,21 +11,14 @@ var db;
 var server = restify.createServer();
 
 // Usermanagement
-var passport = require('passport');
 var mongoose = require('mongoose');
 var jwt = require('restify-jwt');
+require('./usermanagement/users');
+var User = mongoose.model('User');
 var auth = jwt({
     secret: 'MY_SECRET',
     userProperty: 'payload'
 });
-
-
-require('./usermanagement/users');
-require('./usermanagement/passport');
-var User = mongoose.model('User');
-console.log(User);
-
-// mngmtUser.UserMongoose;
 
 /* Solving CORS development pains */
 server.use(
@@ -64,7 +57,6 @@ function corsHandler(req, res, next) {
     res.setHeader('Access-Control-Max-Age', '1000');
     return next();
   }
-// server.use();
 
 // Handle all OPTIONS requests to a deadend (Allows CORS to work them out)
 // server.opts( /.*/, ( req, res ) => res.send( 200 ) )
@@ -74,12 +66,10 @@ server.opts('/.*/', corsHandler, function(req, res, next) {
 });
 
 /* End of CORS fixes */
-/*
-*/
-
 server.use(restify.acceptParser(server.acceptable));
 server.use(restify.queryParser()),
 
+//Mongoose connection
 mongoose.connect(cfg.dbconnectionstring);
 var database = mongoose.connection;
 database.on('error', console.error.bind(console, 'connection error:'));
@@ -104,7 +94,6 @@ mongoose.connection.on('connected', function() {
 /* Server wide declaration was causing problems when POSTing images with multer.
   Moved it to be specific to certain routes
 */
-//server.use(restify.bodyParser());
 
 
 server.listen(cfg.port, function () {
@@ -286,14 +275,10 @@ server.post("/games/player", restify.bodyParser(), function (req, res, next) {
 //****************************************************************************************
 
 server.post('/register', restify.bodyParser(), function(req, res) {
-    console.log("register");
 
     var user = new User();
-    console.log(user);
 
     user.userName = req.body.userName;
-    console.log("user.userName");
-    console.log(user.userName);
     user.email = req.body.email;
     user.firstName = req.body.firstName;
     user.lastName = req.body.lastName;
@@ -302,12 +287,8 @@ server.post('/register', restify.bodyParser(), function(req, res) {
     user.info = req.body.info;
 
     user.setPassword(req.body.password);
-    console.log("user: " + user);
 
     user.save(user, function(err, data) {
-      console.log("save success");
-      console.log("data");
-      console.log(data);
         var token;
         token = user.generateJwt();
         res.status(200);
@@ -317,41 +298,21 @@ server.post('/register', restify.bodyParser(), function(req, res) {
     });
 });
 
-server.post('/login', function(req, res) {
-    console.log("LoginServer");
-    passport.authenticate('local', function(err, user, info){
-        var token;
-        console.log("In passport.authenticate");
-        console.log("token: " + token);
-        console.log("user: " + user);
-        console.log("Info: " + info);
+server.post('/login', restify.bodyParser(), function(req, res) {
+    var token;
+    var emil = req.body.email;
 
-        // If Passport throws/catches an error
-        if (err) {
-            res.status(404).json(err);
-            return;
-        }
-        console.log("After first if");
-
-        // If a user is found
-        if(user){
-            console.log("user is found");
-            token = user.generateJwt();
-            console.log("token: " + token);
-            res.status(200);
-            res.json({
-                "token" : token
-            });
-            console.log(token);
-        }
-        else {
-            console.log("In else");
-            // If user is not found
-            res.status(401).json(info);
-        }
-        console.log("After second if/else");
-    })(req, res);
-    console.log("After Passport");
+    User.findOne({ email: emil }, function (err, user) {
+        if(err){return done (err)};
+        if (!user.validPassword(req.body.password)) { return done(null, false, {
+            message: 'Password ist wrong'
+        }); }
+        token = user.generateJwt();
+        res.status(200);
+        res.json({
+            "token" : token
+        });
+    })
 
 })
 
@@ -367,7 +328,7 @@ server.get("/users", function (req, res, next) {
     return next();
 });
 
-server.get('/profile', auth, function(req, res) {
+/*server.get('/profile', auth, function(req, res) {
 
     if (!req.payload._id) {
         res.status(401).json({
@@ -384,7 +345,7 @@ server.get('/profile', auth, function(req, res) {
             });
     }
 
-});
+});*/
 
 server.get('/profile/:id', function(req, res){
 
