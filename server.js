@@ -327,24 +327,26 @@ server.get("/users", function (req, res, next) {
     return next();
 });
 
-/*server.get('/profile', auth, function(req, res) {
-
+server.get('/profile', auth, function(req, res) {
+    console.log("serverprofile");
     if (!req.payload._id) {
+        console.log("unauthorizedError");
         res.status(401).json({
             "message" : "UnauthorizedError: private profile"
         });
     } else {
-        User
-            .findById(req.payload._id, function (err, user){
+        User.findById(req.payload._id, function (err, user){
+            console.log("find by ID");
                 if(err){
+                    console.log("find by ID ERRor")
                     res.status(401).json("couldnt load profile");
                 } else {
-                    res.status(200).json(user);
+                    console.log("found ID")
+                    res.send(200, user);
                 }
             });
     }
-
-});*/
+});
 
 server.get('/profile/:id', function(req, res){
 
