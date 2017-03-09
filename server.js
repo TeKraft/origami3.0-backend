@@ -392,8 +392,6 @@ server.post('/register', restify.bodyParser(), function(req, res) {
                 User.findOne({email: req.body.email})
                     .then(function(users2){
                         if(users2 == null){
-                            console.log(req.body.email);
-                            console.log("in second if")
                             user.userName = req.body.userName;
                             user.email = req.body.email;
                             user.firstName = req.body.firstName;
@@ -426,8 +424,6 @@ server.post('/register', restify.bodyParser(), function(req, res) {
     User.findOne({email: req.body.email})
         .then(function(users3){
             if(users3 == null){
-                console.log(req.body.email);
-                console.log("in second if")
                 user.userName = req.body.userName;
                 user.email = req.body.email;
                 user.firstName = req.body.firstName;
@@ -574,3 +570,14 @@ server.post('/profileDelete', restify.bodyParser(), auth, function (req, res) {
             });
     }
 });
+server.get('/inviteUser/:email', restify.bodyParser(), function (req, res) {
+    User.findOne({email: req.params.email})
+        .then(function (data) {
+            if(data == null){
+                res.send(401)
+            }
+            else{
+                res.send(200, data)
+            }
+        })
+})
