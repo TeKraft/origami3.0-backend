@@ -385,34 +385,72 @@ server.get("/baseGames/metadata", function (req, res, next) {
 server.post('/register', restify.bodyParser(), function(req, res) {
 
     var user = new User();
-    if(!User.findOne({userName: req.body.userName})){
-        if(!User.findOne({ email: req.body.email})){
-            user.userName = req.body.userName;
-            user.email = req.body.email;
-            user.firstName = req.body.firstName;
-            user.lastName = req.body.lastName;
-            user.registrDate = Date.now();
-            user.birthday = req.body.birthday;
-            user.info = req.body.info;
 
-            user.setPassword(req.body.password);
+    User.findOne({userName: req.body.userName})
+        .then(function(users){
+            if(users == null){
+                User.findOne({email: req.body.email})
+                    .then(function(users2){
+                        if(users2 == null){
+                            console.log(req.body.email);
+                            console.log("in second if")
+                            user.userName = req.body.userName;
+                            user.email = req.body.email;
+                            user.firstName = req.body.firstName;
+                            user.lastName = req.body.lastName;
+                            user.registrDate = Date.now();
+                            user.birthday = req.body.birthday;
+                            user.info = req.body.info;
 
-            user.save(user, function(err, data) {
-                var token;
-                token = user.generateJwt();
-                res.status(200);
-                res.json({
-                    "token" : token
+                            user.setPassword(req.body.password);
+
+                            user.save(user, function(err, data) {
+                                var token;
+                                token = user.generateJwt();
+                                res.status(200);
+                                res.json({
+                                    "token" : token
+                                });
+                            });
+                        }
+                        else{
+                            return res.send(401)
+                        }
+                    })
+            }
+            else{
+                return res.send(401)
+            }
+        })
+
+    User.findOne({email: req.body.email})
+        .then(function(users3){
+            if(users3 == null){
+                console.log(req.body.email);
+                console.log("in second if")
+                user.userName = req.body.userName;
+                user.email = req.body.email;
+                user.firstName = req.body.firstName;
+                user.lastName = req.body.lastName;
+                user.registrDate = Date.now();
+                user.birthday = req.body.birthday;
+                user.info = req.body.info;
+
+                user.setPassword(req.body.password);
+
+                user.save(user, function(err, data) {
+                    var token;
+                    token = user.generateJwt();
+                    res.status(200);
+                    res.json({
+                        "token" : token
+                    });
                 });
-            });
-        }
-        else{
-            res.send(401)
-        }
-    }
-    else{
-        res.send(401)
-    }
+            }
+            else{
+                return res.send(401)
+            }
+        })
 });
 
 server.post('/login', restify.bodyParser(), function(req, res) {
@@ -480,9 +518,38 @@ server.post('/profileUpdate', restify.bodyParser(), auth, function(req, res) {
             "message": "UnauthorizedError: cannot update profile without being logged in to it"
         });
     } else{
-        User.findByIdAndUpdate(req.payload._id, req.body, {runValidators: true, upsert: true})
-            .exec(function (err, user) {
-                res.send(200, user);
+
+        User.findOne({userName: req.body.userName})
+            .then(function (users) {
+                if(users == null || users._id == req.payload._id){
+                    User.findOne({email: req.body.email})
+                        .then(function (users2) {
+                            if(users2 == null || users2._id == req.payload._id){
+                                User.findByIdAndUpdate(req.payload._id, req.body, {runValidators: true, upsert: true})
+                                    .exec(function (err, user) {
+                                        res.send(200, user);
+                                    })
+                            }
+                            else{
+                                return res.send(401)
+                            }
+                        })
+                }
+                else{
+                    return res.send(401)
+                }
+            })
+        User.findOne({email: req.body.email})
+            .then(function (users3) {
+                if(users3 == null || users3._id == req.payload._id){
+                    User.findByIdAndUpdate(req.payload._id, req.body, {runValidators: true, upsert: true})
+                        .exec(function (err, user) {
+                            res.send(200, user);
+                        })
+                }
+                else{
+                    return res.send(401)
+                }
             })
     }
 });
