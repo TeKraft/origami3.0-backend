@@ -42,18 +42,14 @@ var gameSchema = new mongoose.Schema({
       type: String,
       required: true
     },
-    team: [{
-      type: String,
-      required: false
-    }],
-    baseAmount: [{
+    teamAmount: [{
       type: Number,
       required: true
     }],
-    tasks: [{
-        type: String,
-        required: false
-    }],
+    baseAmount: {
+      type: Number,
+      required: true
+    },
     creator: {
       type: String,
       required: true
@@ -87,7 +83,18 @@ var teamSchema = new mongoose.Schema({
         type: String,
         required: false
     }],
-})
+});
+
+var baseSchema = new mongoose.Schema({
+    ownerTeam: {
+        type: String,
+        required: true
+    },
+    tasks: [{
+        type: String,
+        required: false
+    }]
+});
 
 userSchema.methods.setPassword = function(password){
     this.salt = crypto.randomBytes(16).toString('hex');
