@@ -33,6 +33,10 @@ var userSchema = new mongoose.Schema({
         type: String,
         required: false
     },
+    friends:[{
+        type: String,
+        required: true
+    }],
     hash: String,
     salt: String
 });
