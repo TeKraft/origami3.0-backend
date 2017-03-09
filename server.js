@@ -304,7 +304,7 @@ server.get('/baseGames/:creator', function (req, res, next) {
 });
 
 // Get only one certain game created by user
-server.get("/games/item/:name/:creator", function (req, res, next) {
+server.get("/baseGames/baseItem/:name/:creator", function (req, res, next) {
   BaseGames.find({ "name": req.params.name , 'creator' : req.params.creator}, function (err, games) {
     res.writeHead(200, {
       'Content-Type': 'application/json; charset=utf-8'
@@ -320,7 +320,7 @@ server.post("/baseGames/baseItem", restify.bodyParser(), function (req, res, nex
   console.log("baseGames/baseItem");
   console.log(item);
 
-  // var baseGame = new BaseGame();
+  var baseGame = new BaseGame();
   //
   // baseGame.name = gametitle;
   // baseGame.team = teamnamen;
@@ -330,7 +330,7 @@ server.post("/baseGames/baseItem", restify.bodyParser(), function (req, res, nex
   // baseGame.uniqueKey = creator+gametitle;
   // baseGame.info = info;
 
-  BaseGame.save(item, function (err, data) {
+  BaseGame.save(baseGame, function (err, data) {
     console.log("data");
     console.log(data);
     res.writeHead(200, {
@@ -385,35 +385,46 @@ server.get("/baseGames/metadata", function (req, res, next) {
 server.post('/register', restify.bodyParser(), function(req, res) {
 
     var user = new User();
+    if(!User.findOne({userName: req.body.userName})){
+        if(!User.findOne({ email: req.body.email})){
+            user.userName = req.body.userName;
+            user.email = req.body.email;
+            user.firstName = req.body.firstName;
+            user.lastName = req.body.lastName;
+            user.registrDate = Date.now();
+            user.birthday = req.body.birthday;
+            user.info = req.body.info;
 
-    user.userName = req.body.userName;
-    user.email = req.body.email;
-    user.firstName = req.body.firstName;
-    user.lastName = req.body.lastName;
-    user.registrDate = Date.now();
-    user.birthday = req.body.birthday;
-    user.info = req.body.info;
+            user.setPassword(req.body.password);
 
-    user.setPassword(req.body.password);
-
-    user.save(user, function(err, data) {
-        var token;
-        token = user.generateJwt();
-        res.status(200);
-        res.json({
-            "token" : token
-        });
-    });
+            user.save(user, function(err, data) {
+                var token;
+                token = user.generateJwt();
+                res.status(200);
+                res.json({
+                    "token" : token
+                });
+            });
+        }
+        else{
+            res.send(401)
+        }
+    }
+    else{
+        res.send(401)
+    }
 });
 
 server.post('/login', restify.bodyParser(), function(req, res) {
     var token;
 
     User.findOne({ email: req.body.email }, function (err, user) {
-        if(err){return done (err)};
-        if (!user.validPassword(req.body.password)) { return done(null, false, {
-            message: 'Password ist wrong'
-        }); }
+        if(user == null){
+            return res.send(401)
+        }
+        if (!user.validPassword(req.body.password)) {
+            return res.send(401);
+        }
         token = user.generateJwt();
         res.status(200);
         res.json({
@@ -436,7 +447,6 @@ server.get("/users", function (req, res, next) {
 });
 
 server.get('/profile', auth, function(req, res) {
-    console.log("serverprofile");
     if (!req.payload._id) {
         console.log("unauthorizedError");
         res.send(401, {
@@ -444,12 +454,10 @@ server.get('/profile', auth, function(req, res) {
         });
     } else {
         User.findById(req.payload._id, function (err, user){
-            console.log("find by ID");
                 if(err){
                     console.log("find by ID ERRor")
                     res.send(401, "couldnt load profile");
                 } else {
-                    console.log("found ID")
                     res.send(200, user);
                 }
             });
