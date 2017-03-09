@@ -274,7 +274,7 @@ server.post("/games/player", restify.bodyParser(), function (req, res, next) {
 //****************************************************************************************
 //****************************************************************************************
 var BaseGame = mongoose.model('BaseGame');
-var Team = mongoose.model('Team');
+var Base = mongoose.model('Base');
 
 //Get all the games
 server.get('/baseGames', function (req, res, next) {
@@ -498,13 +498,10 @@ server.get('/profile', auth, function(req, res) {
     }
 });
 
-server.get('/profile/:id', function(req, res){
-    User.findById(req.params.id, function(err, obj){
-            if(err){
-                res.send(401, "could not load the profile");
-            } else {
-                res.send(200, obj);
-            }
+server.get('/profile/:_id', function(req, res){
+    User.findOne({_id: req.params._id})
+        .then(function(data){
+            res.send(200, data)
         });
 });
 
@@ -578,6 +575,17 @@ server.get('/inviteUser/:email', restify.bodyParser(), function (req, res) {
             }
             else{
                 res.send(200, data)
+            }
+        })
+});
+server.get('/friendUser/:userName', restify.bodyParser(), function (req, res) {
+    User.findOne({userName: req.params.userName})
+        .then(function (data) {
+            if(data == null){
+                res.send(404)
+            }
+            else{
+                res.send(200, data);
             }
         })
 })
