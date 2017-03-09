@@ -33,10 +33,6 @@ var userSchema = new mongoose.Schema({
         type: String,
         required: false
     },
-    friends:[{
-       type: String,
-        required: true
-    }],
     hash: String,
     salt: String
 });
@@ -46,14 +42,14 @@ var gameSchema = new mongoose.Schema({
       type: String,
       required: true
     },
-    teamAmount: [{
-      type: Number,
+    team: [{
+      type: String,
       required: true
     }],
-    baseAmount: {
-      type: Number,
+    basekey: [{
+      type: String,
       required: true
-    },
+    }],
     creator: {
       type: String,
       required: true
@@ -63,30 +59,14 @@ var gameSchema = new mongoose.Schema({
       unique: true,
       required: true
     },
-    info: {
+    description: {
         type: String,
         required: false
-    }
-});
-
-var teamSchema = new mongoose.Schema({
-    name: {
-        type: String,
-        unique: true,
-        required: true
     },
-    teammates: [{
-        type: String,
-        required: true
-    }],
-    owner: [{
-        type: String,
-        required: true
-    }],
-    base: [{
-        type: String,
-        required: false
-    }],
+    questions: [{
+      type: String,
+      required: true
+    }]
 });
 
 var baseSchema = new mongoose.Schema({
@@ -94,11 +74,31 @@ var baseSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    tasks: [{
-        type: String,
+    power: {
+        type: Number,
         required: false
-    }]
+    }
 });
+
+// var teamSchema = new mongoose.Schema({
+//     name: {
+//         type: String,
+//         unique: true,
+//         required: true
+//     },
+//     teammates: [{
+//         type: String,
+//         required: true
+//     }],
+//     owner: [{
+//         type: String,
+//         required: true
+//     }],
+//     base: [{
+//         type: String,
+//         required: false
+//     }],
+// });
 
 userSchema.methods.setPassword = function(password){
     this.salt = crypto.randomBytes(16).toString('hex');
@@ -124,4 +124,5 @@ userSchema.methods.generateJwt = function() {
 
 var User = mongoose.model('User', userSchema);
 var BaseGame = mongoose.model('BaseGame', gameSchema);
-var Team = mongoose.model('Team', teamSchema);
+var Base = mongoose.model('Base', baseSchema);
+// var Team = mongoose.model('Team', teamSchema);
