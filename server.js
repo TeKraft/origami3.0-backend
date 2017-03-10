@@ -69,6 +69,8 @@ server.opts('/.*/', corsHandler, function(req, res, next) {
 server.use(restify.acceptParser(server.acceptable));
 server.use(restify.queryParser()),
 
+// mongoose.Promise = global.Promise;
+
 //Mongoose connection
 mongoose.connect(cfg.dbconnectionstring);
 var database = mongoose.connection;
@@ -314,25 +316,56 @@ server.get("/baseGames/baseItem/:name/:creator", function (req, res, next) {
   return next();
 });
 
+//Get all the bases
+server.get('/bases', function (req, res, next) {
+  Base.find(function (err, bases) {
+    res.writeHead(200, {
+      'Content-Type': 'application/json;charset=utf-8'
+    });
+    res.end(JSON.stringify(bases));
+  });
+
+  return next();
+});
+
 // Add new game to the list
 server.post("/baseGames/baseItem", restify.bodyParser(), function (req, res, next) {
   var item = req.params;
   console.log("baseGames/baseItem");
-  console.log(item);
+  var itemBases = item.activities[0].basepoints;
+
+  var baseIDs = [];
+  for (var i=0; i<itemBases.length; i++) {
+    var base = new Base();
+    base.ownerTeam = "default";
+    base.power = "1";
+    base.name = itemBases[i].name;
+    base.description = itemBases[i].description;
+    base.latitude = itemBases[i].lat;
+    base.longitude = itemBases[i].lng;
+
+    base.save(base, function (err, data) {
+      res.writeHead(200, {
+        'Content-Type': 'application/json; charset=utf-8'
+      });
+      res.end(JSON.stringify(data));
+    });
+    console.log(i+1 + " - " + "bases saved");
+    baseIDs.push(base._id);
+  }
+  console.log(baseIDs);
 
   var baseGame = new BaseGame();
-  //
-  // baseGame.name = gametitle;
-  // baseGame.team = teamnamen;
-  // baseGame.baseAmount = anzahleBasen;
-  // baseGame.tasks = aufgabe;
-  // baseGame.creator = creator;
-  // baseGame.uniqueKey = creator+gametitle;
-  // baseGame.info = info;
+  baseGame.name = item.name;
+  baseGame.team = item.team;
+  baseGame.mode = item.activities[0].type;
+  baseGame.basekey = baseIDs;
+  baseGame.questions = item.tasks;
+  baseGame.creator = item.gameCreator;
+  baseGame.uniqueKey = item.gameCreator + item.name;
+  baseGame.description = item.description;
 
-  BaseGame.save(baseGame, function (err, data) {
-    console.log("data");
-    console.log(data);
+  baseGame.save(baseGame, function (err, data) {
     res.writeHead(200, {
       'Content-Type': 'application/json; charset=utf-8'
     });
@@ -367,13 +400,94 @@ server.post("/baseGames/baseItem", restify.bodyParser(), function (req, res, nex
 // Get only game metadata from the database - getting all games was shown to be slow
 server.get("/baseGames/metadata", function (req, res, next) {
   console.log("/baseGames/metadata");
-  // BaseGame.find({}, { name: 1, description: 1, timecompl: 1, difficulty: 1 }, function (err, data) {
-  //   res.writeHead(200, {
-  //     'Content-Type': 'application/json;charset=utf-8'
-  //   });
-  //   res.end(JSON.stringify(data));
-  // });
-  // return next();
+  BaseGame.find({}, { name: 1, description: 1, timecompl: 1, difficulty: 1 }, function (err, data) {
+    res.writeHead(200, {
+      'Content-Type': 'application/json;charset=utf-8'
+    });
+    res.end(JSON.stringify(data));
+  });
+  return next();
+});
+
+// Get uploaded image stored in game object
+server.get("/baseData/img/:filename", function (req, res, next) {
+  var filename = req.params.filename;
+  var imgdir = "data";
+  var fullpath = imgdir + "/" + filename;
+
+  fs.readFile(fullpath, function (err, file) {
+    if (err) {
+      console.log("Error when reading file - ", fullpath);
+      res.writeHead(500);
+      return res.end();
+    }
+    im.identify(fullpath, function (err, features) {
+      if (err) throw err;
+      mime_type = features['mime type'];
+      res.writeHead(200, { 'Content-type': mime_type });
+      res.write(file);
+      res.end();
+      return next();
+    });
+  });
+});
+
+/*
+  1. Upload image to directory specified by multer (temp filename auto-assigned by multer)
+  2. Get image parameters (type, width, height, size) using Imagemagick (requires it to be pre-installed)
+  3. Calculate MD5 checksum of uploaded file
+  4. If file already exists delete the temp file
+  5. If file does not exist, rename it in the  "<md5sum>.<filetype extension>" format
+
+  TODO in future: Resize image if size or dimensions are too big
+*/
+server.post("/baseData/img/upload", upload, function(req, res, next) {
+  console.log("baseData/img/upload");
+  var uploaded_file = res.req.file.path;
+  console.log("01");
+  function process_image(uploaded_file, format, width, height, filesize) {
+    console.log("02 function");
+    const ext_map = {'JPEG' : '.jpg', 'PNG' : '.png', 'GIF' : '.gif'};
+    var uploaded_dir = path.dirname(uploaded_file)
+    var basename = path.basename(uploaded_file)
+    var md5sum = md5file.sync(uploaded_file);
+    var new_file = uploaded_dir + path.sep + md5sum + ext_map[format];
+    console.log("03");
+    if (fs.existsSync(new_file)) {
+      console.log("04");
+      console.log('File "' + uploaded_file + '" is the same as "' + new_file + '". Removing the former.');
+      fs.unlink(uploaded_file, function(err) {
+        if (err) { console.log("05"); console.log("Error occurred when removing file ", uploaded_file); }
+      });
+    } else {
+      console.log("06");
+      console.log("Renaming " + uploaded_file + " to " + new_file)
+      fs.renameSync(uploaded_file, new_file)
+    }
+    console.log("07");
+    res.contentType = 'json';
+    res.send(200, {'img_file': path.basename(new_file)}).end();
+  }
+  console.log("08");
+  /* Get image params from ImageMagick */
+  im.identify( uploaded_file, function(err, features) {
+    console.log("09");
+    console.log("error");
+    console.log(err);
+    console.log(uploaded_file);
+    console.log(format);
+    console.log(width);
+    console.log(height);
+    console.log(size);
+    if (err) throw err;
+    var format = features['format'];
+    var width = features['width'];
+    var height = features['height'];
+    var size = features['filesize'];
+    process_image(uploaded_file, format, width, height, size);
+  });
+  console.log("10");
+  return next();
 });
 
 //****************************************************************************************

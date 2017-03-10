@@ -54,6 +54,10 @@ var gameSchema = new mongoose.Schema({
       type: String,
       required: true
     }],
+    mode: {
+      type: String,
+      required: false
+    },
     creator: {
       type: String,
       required: true
@@ -67,10 +71,7 @@ var gameSchema = new mongoose.Schema({
         type: String,
         required: false
     },
-    questions: [{
-      type: String,
-      required: true
-    }]
+    questions: [{}]
 });
 
 var baseSchema = new mongoose.Schema({
@@ -81,6 +82,22 @@ var baseSchema = new mongoose.Schema({
     power: {
         type: Number,
         required: false
+    },
+    name: {
+      type: String,
+      required: true
+    },
+    description: {
+      type: String,
+      required: false
+    },
+    latitude: {
+      type: Number,
+      required: true
+    },
+    longitude: {
+      type: Number,
+      required: true
     }
 });
 
