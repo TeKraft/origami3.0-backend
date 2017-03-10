@@ -306,11 +306,14 @@ server.get('/baseGames/:creator', function (req, res, next) {
 });
 
 // Get only one certain game created by user
-server.get("/baseGames/baseItem/:name/:creator", function (req, res, next) {
-  BaseGames.find({ "name": req.params.name , 'creator' : req.params.creator}, function (err, games) {
+server.get("/baseGames/baseItem/:baseUser/:baseName", function (req, res, next) {
+    console.log(req.params.baseUser)
+    console.log(req.params.baseName)
+  BaseGame.find({ creator: req.params.baseUser , name : req.params.baseName}, function (err, games) {
     res.writeHead(200, {
       'Content-Type': 'application/json; charset=utf-8'
     });
+    console.log(games);
     res.end(JSON.stringify(games));
   });
   return next();
