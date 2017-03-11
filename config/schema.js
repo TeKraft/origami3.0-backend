@@ -98,6 +98,10 @@ var baseSchema = new mongoose.Schema({
     longitude: {
       type: Number,
       required: true
+    },
+    gameID: {
+       type: String,
+       required: true
     }
 });
 

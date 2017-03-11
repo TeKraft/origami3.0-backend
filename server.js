@@ -292,7 +292,7 @@ server.get('/baseGames', function (req, res, next) {
 
 //Get all base games created by logged user
 server.get('/baseGames/:creator', function (req, res, next) {
-  console.log("/baseGames");
+  console.log("/baseGames/:creator");
   console.log(req.params.creator);
 
   BaseGame.find({ 'creator': req.params.creator }, function (err, games) {
@@ -319,18 +319,6 @@ server.get("/baseGames/baseItem/:baseUser/:baseName", function (req, res, next) 
   return next();
 });
 
-//Get all the bases
-server.get('/bases', function (req, res, next) {
-  Base.find(function (err, bases) {
-    res.writeHead(200, {
-      'Content-Type': 'application/json;charset=utf-8'
-    });
-    res.end(JSON.stringify(bases));
-  });
-
-  return next();
-});
-
 // Add new game to the list
 server.post("/baseGames/baseItem", restify.bodyParser(), function (req, res, next) {
   var item = req.params;
@@ -346,6 +334,7 @@ server.post("/baseGames/baseItem", restify.bodyParser(), function (req, res, nex
     base.description = itemBases[i].description;
     base.latitude = itemBases[i].lat;
     base.longitude = itemBases[i].lng;
+    base.gameID = item.gameCreator + item.name;
 
     base.save(base, function (err, data) {
       res.writeHead(200, {
@@ -410,6 +399,36 @@ server.get("/baseGames/metadata", function (req, res, next) {
     res.end(JSON.stringify(data));
   });
   return next();
+});
+
+
+//Get all the bases
+server.get('/bases', function (req, res, next) {
+  Base.find(function (err, bases) {
+    res.writeHead(200, {
+      'Content-Type': 'application/json;charset=utf-8'
+    });
+    res.end(JSON.stringify(bases));
+  });
+
+  return next();
+});
+
+//Get all base games created by logged user
+server.get('/bases/:uniqueKey', function (req, res, next) {
+  console.log("/bases/:uniqueKey");
+  console.log(req.params.uniqueKey);
+
+  Base.find({ 'gameID': req.params.uniqueKey }, function (err, base) {
+    console.log("base");
+    console.log(base);
+    // res.writeHead(200, {
+    //   'Content-Type': 'application/json;charset=utf-8'
+    // });
+    // res.end(JSON.stringify(base));
+    res.send(200, base);
+  });
+  // return next();
 });
 
 // Get uploaded image stored in game object
@@ -615,8 +634,8 @@ server.get('/profile', auth, function(req, res) {
     }
 });
 
-server.get('/profile/:_id', function(req, res){
-    User.findOne({_id: req.params._id})
+server.get('/profile/:userName', function(req, res){
+    User.findOne({userName: req.params.userName})
         .then(function(data){
             res.send(200, data)
         });
@@ -628,39 +647,10 @@ server.post('/profileUpdate', restify.bodyParser(), auth, function(req, res) {
             "message": "UnauthorizedError: cannot update profile without being logged in to it"
         });
     } else{
-
-        User.findOne({userName: req.body.userName})
-            .then(function (users) {
-                if(users == null || users._id == req.payload._id){
-                    User.findOne({email: req.body.email})
-                        .then(function (users2) {
-                            if(users2 == null || users2._id == req.payload._id){
-                                User.findByIdAndUpdate(req.payload._id, req.body, {runValidators: true, upsert: true})
-                                    .exec(function (err, user) {
-                                        res.send(200, user);
-                                    })
-                            }
-                            else{
-                                return res.send(401)
-                            }
-                        })
-                }
-                else{
-                    return res.send(401)
-                }
-            })
-        User.findOne({email: req.body.email})
-            .then(function (users3) {
-                if(users3 == null || users3._id == req.payload._id){
-                    User.findByIdAndUpdate(req.payload._id, req.body, {runValidators: true, upsert: true})
-                        .exec(function (err, user) {
-                            res.send(200, user);
-                        })
-                }
-                else{
-                    return res.send(401)
-                }
-            })
+        User.findByIdAndUpdate(req.payload._id, req.body, {runValidators: true, upsert: true})
+            .exec(function (err, user) {
+                res.send(200, user);
+            });
     }
 });
 
@@ -705,4 +695,4 @@ server.get('/friendUser/:userName', restify.bodyParser(), function (req, res) {
                 res.send(200, data);
             }
         })
-})
+});
