@@ -277,6 +277,7 @@ server.post("/games/player", restify.bodyParser(), function (req, res, next) {
 //****************************************************************************************
 var BaseGame = mongoose.model('BaseGame');
 var Base = mongoose.model('Base');
+var Team = mongoose.model('Team')
 
 //Get all the games
 server.get('/baseGames', function (req, res, next) {

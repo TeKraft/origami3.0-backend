@@ -71,7 +71,10 @@ var gameSchema = new mongoose.Schema({
         type: String,
         required: false
     },
-    questions: [{}]
+    questions: [{
+        type: String,
+        required: false
+    }]
 });
 
 var baseSchema = new mongoose.Schema({
@@ -105,25 +108,25 @@ var baseSchema = new mongoose.Schema({
     }
 });
 
-// var teamSchema = new mongoose.Schema({
-//     name: {
-//         type: String,
-//         unique: true,
-//         required: true
-//     },
-//     teammates: [{
-//         type: String,
-//         required: true
-//     }],
-//     owner: [{
-//         type: String,
-//         required: true
-//     }],
-//     base: [{
-//         type: String,
-//         required: false
-//     }],
-// });
+var teamSchema = new mongoose.Schema({
+   name: {
+       type: String,
+       unique: true,
+       required: true
+   },
+   teammates: [{
+       type: String,
+       required: false
+   }],
+   owner: [{
+       type: String,
+       required: true
+   }],
+   base: [{
+       type: String,
+       required: false
+   }],
+});
 
 userSchema.methods.setPassword = function(password){
     this.salt = crypto.randomBytes(16).toString('hex');
@@ -150,4 +153,4 @@ userSchema.methods.generateJwt = function() {
 var User = mongoose.model('User', userSchema);
 var BaseGame = mongoose.model('BaseGame', gameSchema);
 var Base = mongoose.model('Base', baseSchema);
-// var Team = mongoose.model('Team', teamSchema);
+var Team = mongoose.model('Team', teamSchema);
