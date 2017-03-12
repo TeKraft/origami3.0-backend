@@ -501,12 +501,31 @@ server.post("/baseData/img/upload", upload, function(req, res, next) {
   return next();
 });
 
-server.post('/updateBasegame', restify.bodyParser(), function(req, res){
+server.post('/updateBasegameplayer', restify.bodyParser(), function(req, res){
     BaseGame.findOne({_id: req.body._id})
         .then(function (game) {
             game.players.push(req.body.players[req.body.players.length-1])
-            game.save();
-            res.send(200)
+            BaseGame.findByIdAndUpdate(req.body._id, game, {runValidators: true, upsert: true})
+                .then(function () {
+                    res.send(200);
+                });
+        });
+})
+server.post('/updateBasegameteammates/:teamName', restify.bodyParser(), function(req, res){
+    BaseGame.findOne({_id: req.body._id})
+        .then(function (game) {
+            console.log(game)
+            for(var i=0; i<game.team.length; i++){
+                if(game.team[i].teamName == req.params.teamName){
+                    game.team[i].teamMates.push(req.body.team[i].teamMates[req.body.team[i].teamMates.length-1]);
+                    console.log(game)
+                    console.log(game.team[i].teamMates)
+                    BaseGame.findByIdAndUpdate(req.body._id, game, {runValidators: true, upsert: true})
+                        .then(function () {
+                            res.send(200);
+                        });
+                }
+            }
         });
 })
 
