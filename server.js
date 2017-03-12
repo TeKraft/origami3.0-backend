@@ -293,8 +293,6 @@ server.get('/baseGames', function (req, res, next) {
 
 //Get all base games created by logged user
 server.get('/baseGames/:creator', function (req, res, next) {
-  console.log("/baseGames/:creator");
-  console.log(req.params.creator);
 
   BaseGame.find({ 'creator': req.params.creator }, function (err, games) {
     res.writeHead(200, {
@@ -308,13 +306,10 @@ server.get('/baseGames/:creator', function (req, res, next) {
 
 // Get only one certain game created by user
 server.get("/baseGames/baseItem/:baseUser/:baseName", function (req, res, next) {
-    console.log(req.params.baseUser)
-    console.log(req.params.baseName)
   BaseGame.find({ creator: req.params.baseUser , name : req.params.baseName}, function (err, games) {
     res.writeHead(200, {
       'Content-Type': 'application/json; charset=utf-8'
     });
-    console.log(games);
     res.end(JSON.stringify(games));
   });
   return next();
@@ -322,8 +317,8 @@ server.get("/baseGames/baseItem/:baseUser/:baseName", function (req, res, next) 
 
 // Add new game to the list
 server.post("/baseGames/baseItem", restify.bodyParser(), function (req, res, next) {
+
   var item = req.params;
-  console.log("baseGames/baseItem");
   var itemBases = item.activities[0].basepoints;
 
   var baseIDs = [];
@@ -338,27 +333,30 @@ server.post("/baseGames/baseItem", restify.bodyParser(), function (req, res, nex
     base.gameID = item.gameCreator + item.name;
 
     base.save(base, function (err, data) {
+        console.log("basesave")
       res.writeHead(200, {
         'Content-Type': 'application/json; charset=utf-8'
       });
       res.end(JSON.stringify(data));
     });
-    console.log(i+1 + " - " + "bases saved");
     baseIDs.push(base._id);
   }
-  console.log(baseIDs);
 
   var baseGame = new BaseGame();
   baseGame.name = item.name;
   baseGame.team = item.team;
   baseGame.mode = item.activities[0].type;
   baseGame.basekey = baseIDs;
+  console.log(item.tasks);
   baseGame.questions = item.tasks;
+  console.log(baseGame.questions)
   baseGame.creator = item.gameCreator;
   baseGame.uniqueKey = item.gameCreator + item.name;
   baseGame.description = item.description;
+  console.log(baseGame)
 
   baseGame.save(baseGame, function (err, data) {
+      console.log("basegamesave");
     res.writeHead(200, {
       'Content-Type': 'application/json; charset=utf-8'
     });
@@ -417,19 +415,9 @@ server.get('/bases', function (req, res, next) {
 
 //Get all base games created by logged user
 server.get('/bases/:uniqueKey', function (req, res, next) {
-  console.log("/bases/:uniqueKey");
-  console.log(req.params.uniqueKey);
-
   Base.find({ 'gameID': req.params.uniqueKey }, function (err, base) {
-    console.log("base");
-    console.log(base);
-    // res.writeHead(200, {
-    //   'Content-Type': 'application/json;charset=utf-8'
-    // });
-    // res.end(JSON.stringify(base));
     res.send(200, base);
   });
-  // return next();
 });
 
 // Get uploaded image stored in game object
@@ -512,6 +500,15 @@ server.post("/baseData/img/upload", upload, function(req, res, next) {
   console.log("10");
   return next();
 });
+
+server.post('/updateBasegame', restify.bodyParser(), function(req, res){
+    BaseGame.findOne({_id: req.body._id})
+        .then(function (game) {
+            game.players.push(req.body.players[req.body.players.length-1])
+            game.save();
+            res.send(200)
+        });
+})
 
 //****************************************************************************************
 //****************************************************************************************
@@ -697,3 +694,11 @@ server.get('/friendUser/:userName', restify.bodyParser(), function (req, res) {
             }
         })
 });
+server.post('/friendUpdate', restify.bodyParser(), function(req, res){
+    User.findOne({_id: req.body._id})
+        .then(function (user) {
+            user.games.push(req.body.games[req.body.games.length-1])
+            user.save();
+            res.send(200)
+        });
+})

@@ -37,6 +37,10 @@ var userSchema = new mongoose.Schema({
         type: String,
         required: true
     }],
+    games: [{
+        type: String,
+        required: false
+    }],
     hash: String,
     salt: String
 });
@@ -46,10 +50,11 @@ var gameSchema = new mongoose.Schema({
       type: String,
       required: true
     },
-    team: [{
-      type: String,
-      required: true
+    players:[{
+       type: String,
+       required: false
     }],
+    team: [mongoose.Schema.Types.Mixed],
     basekey: [{
       type: String,
       required: true
@@ -71,10 +76,7 @@ var gameSchema = new mongoose.Schema({
         type: String,
         required: false
     },
-    questions: [{
-        type: String,
-        required: false
-    }]
+    questions: [mongoose.Schema.Types.Mixed]
 });
 
 var baseSchema = new mongoose.Schema({
