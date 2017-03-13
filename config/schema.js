@@ -79,6 +79,11 @@ var gameSchema = new mongoose.Schema({
     questions: [mongoose.Schema.Types.Mixed]
 });
 var ffaSchema = new mongoose.Schema({
+    name: {
+      type: String,
+      required: true,
+      unique: true
+    },
     bases: [mongoose.Schema.Types.Mixed],
     players:[{
        type: String,

@@ -571,10 +571,10 @@ server.post('/FFAGameCreation', restify.bodyParser(), function (req, res, next) 
 
 server.post('/FFABaseSave', restify.bodyParser(), function (req, res, next) {
   console.log("FFABaseSave");
-  // console.log(req.params);
+  console.log(req.params);
 
   FFAGame.update(
-    { _id: "58c6183145e79a0f6c77d99a" },
+    { name: "Open World OriGami" },
     { $set: { bases: req.params } },
     function (err, data) {
     // console.log("data");
