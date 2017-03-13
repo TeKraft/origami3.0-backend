@@ -14,7 +14,14 @@ var server = restify.createServer();
 var mongoose = require('mongoose');
 var jwt = require('restify-jwt');
 require('./config/schema');
+
+// mongoose model schema
 var User = mongoose.model('User');
+var BaseGame = mongoose.model('BaseGame');
+var Base = mongoose.model('Base');
+var Team = mongoose.model('Team');
+var FFAGame = mongoose.model('FFAGame');
+
 var auth = jwt({
     secret: 'MY_SECRET',
     userProperty: 'payload'
@@ -275,9 +282,6 @@ server.post("/games/player", restify.bodyParser(), function (req, res, next) {
 //                                  account gamemanagement
 //****************************************************************************************
 //****************************************************************************************
-var BaseGame = mongoose.model('BaseGame');
-var Base = mongoose.model('Base');
-var Team = mongoose.model('Team')
 
 //Get all the games
 server.get('/baseGames', function (req, res, next) {
@@ -528,6 +532,81 @@ server.post('/updateBasegameteammates/:teamName', restify.bodyParser(), function
             }
         });
 })
+
+//****************************************************************************************
+//****************************************************************************************
+//                                  FFA Game
+//****************************************************************************************
+//****************************************************************************************
+
+server.get('/FFAGame', function (req, res, next) {
+  console.log("ffagame server");
+    FFAGame.find(function (err, ffa) {
+      res.writeHead(200, {
+        'Content-Type': 'application/json;charset=utf-8'
+      });
+      res.end(JSON.stringify(ffa));
+    });
+    return next();
+});
+
+// create FFA game to default with 5 teams
+server.post('/FFAGameCreation', restify.bodyParser(), function (req, res, next) {
+  console.log("ffagame creation");
+  console.log(req.params);
+  var gameFFA = new FFAGame();
+  gameFFA.name = req.params.name;
+  gameFFA.team = req.params.team;
+
+  gameFFA.save(gameFFA, function (err, data) {
+    console.log("data");
+    console.log(data);
+    res.writeHead(200, {
+      'Content-Type': 'application/json; charset=utf-8'
+    });
+    res.end(JSON.stringify(data));
+  });
+  return next();
+});
+
+server.post('/FFABaseSave', restify.bodyParser(), function (req, res, next) {
+  console.log("FFABaseSave");
+  // console.log(req.params);
+
+  FFAGame.update(
+    { _id: "58c6183145e79a0f6c77d99a" },
+    { $set: { bases: req.params } },
+    function (err, data) {
+    // console.log("data");
+    // console.log(data);
+    res.writeHead(200, {
+      'Content-Type': 'application/json; charset=utf-8'
+    });
+    res.end(JSON.stringify(data));
+  });
+  return next();
+});
+
+// server.get('/FFAGame/item/:name', function (req, res, next) {
+//     console.log("hi");
+//     var username = req.params.name;
+//     console.log("username - " + username);
+//     FFAGame.find(function (err, ffa) {
+//         res.send(200, ffa);
+//     });
+// })
+
+// Get only one certain game created by user
+server.get("/FFAGame/item/:baseName", function (req, res, next) {
+  console.log(req.params.baseName);
+  FFAGame.find(function (err, ffa) {
+    res.writeHead(200, {
+      'Content-Type': 'application/json; charset=utf-8'
+    });
+    res.end(JSON.stringify(ffa));
+  });
+  return next();
+});
 
 //****************************************************************************************
 //****************************************************************************************

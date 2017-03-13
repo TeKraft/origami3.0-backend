@@ -78,6 +78,15 @@ var gameSchema = new mongoose.Schema({
     },
     questions: [mongoose.Schema.Types.Mixed]
 });
+var ffaSchema = new mongoose.Schema({
+    bases: [mongoose.Schema.Types.Mixed],
+    players:[{
+       type: String,
+       required: false
+    }],
+    team: [mongoose.Schema.Types.Mixed],
+    questions: [mongoose.Schema.Types.Mixed]
+});
 
 var baseSchema = new mongoose.Schema({
     ownerTeam: {
@@ -156,3 +165,4 @@ var User = mongoose.model('User', userSchema);
 var BaseGame = mongoose.model('BaseGame', gameSchema);
 var Base = mongoose.model('Base', baseSchema);
 var Team = mongoose.model('Team', teamSchema);
+var FFAGame = mongoose.model('FFAGame', ffaSchema);
