@@ -285,7 +285,9 @@ server.post("/games/player", restify.bodyParser(), function (req, res, next) {
 
 //Get all the games
 server.get('/baseGames', function (req, res, next) {
+    console.log('find all basegames')
   BaseGame.find(function (err, games) {
+    console.log("found game")
     res.writeHead(200, {
       'Content-Type': 'application/json;charset=utf-8'
     });
@@ -329,7 +331,7 @@ server.post("/baseGames/baseItem", restify.bodyParser(), function (req, res, nex
   for (var i=0; i<itemBases.length; i++) {
     var base = new Base();
     base.ownerTeam = "default";
-    base.power = "1";
+    base.power = "3";
     base.name = itemBases[i].name;
     base.description = itemBases[i].description;
     base.latitude = itemBases[i].lat;
@@ -532,14 +534,15 @@ server.post('/updateBasegameteammates/:teamName/:playerName', restify.bodyParser
         });
 })
 server.post('/baseUpdate', restify.bodyParser(), function(req, res){
-  base.findOne({_id: req.body._id})
-      .then(function(base){
-        base.power = req.body.power;
-        base.findByIdAndUpdate(req.body._id, base, {runValidators: true, upsert: true})
-            .then(function (data) {
-                res.send(200, data);
-            })
-      })
+    Base.findOne({_id: req.body._id})
+        .then(function(base){
+            base.ownerTeam = req.body.ownerTeam;
+            base.power = req.body.power;
+            Base.findByIdAndUpdate(req.body._id, base, {runValidators: true, upsert: true})
+                .then(function (data) {
+                    res.send(200, data);
+                })
+        })
 })
 
 //****************************************************************************************
