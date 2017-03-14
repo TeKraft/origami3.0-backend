@@ -515,22 +515,31 @@ server.post('/updateBasegameplayer', restify.bodyParser(), function(req, res){
                 });
         });
 })
-server.post('/updateBasegameteammates/:teamName', restify.bodyParser(), function(req, res){
+server.post('/updateBasegameteammates/:teamName/:playerName', restify.bodyParser(), function(req, res){
     BaseGame.findOne({_id: req.body._id})
         .then(function (game) {
-            console.log(game)
             for(var i=0; i<game.team.length; i++){
                 if(game.team[i].teamName == req.params.teamName){
                     game.team[i].teamMates.push(req.body.team[i].teamMates[req.body.team[i].teamMates.length-1]);
-                    console.log(game)
-                    console.log(game.team[i].teamMates)
+                    var index = game.players.indexOf(req.params.playerName);
+                    game.players.splice(index, 1);
                     BaseGame.findByIdAndUpdate(req.body._id, game, {runValidators: true, upsert: true})
-                        .then(function () {
-                            res.send(200);
-                        });
+                        .then(function (data) {
+                            res.send(200, data);
+                        })
                 }
             }
         });
+})
+server.post('/baseUpdate', restify.bodyParser(), function(req, res){
+  base.findOne({_id: req.body._id})
+      .then(function(base){
+        base.power = req.body.power;
+        base.findByIdAndUpdate(req.body._id, base, {runValidators: true, upsert: true})
+            .then(function (data) {
+                res.send(200, data);
+            })
+      })
 })
 
 //****************************************************************************************
@@ -552,15 +561,11 @@ server.get('/FFAGame', function (req, res, next) {
 
 // create FFA game to default with 5 teams
 server.post('/FFAGameCreation', restify.bodyParser(), function (req, res, next) {
-  console.log("ffagame creation");
-  console.log(req.params);
   var gameFFA = new FFAGame();
   gameFFA.name = req.params.name;
   gameFFA.team = req.params.team;
 
   gameFFA.save(gameFFA, function (err, data) {
-    console.log("data");
-    console.log(data);
     res.writeHead(200, {
       'Content-Type': 'application/json; charset=utf-8'
     });
@@ -570,8 +575,6 @@ server.post('/FFAGameCreation', restify.bodyParser(), function (req, res, next) 
 });
 
 server.post('/FFABaseSave', restify.bodyParser(), function (req, res, next) {
-  console.log("FFABaseSave");
-  console.log(req.params);
 
   FFAGame.update(
     { name: "Open World OriGami" },
