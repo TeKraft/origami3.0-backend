@@ -361,6 +361,26 @@ server.post("/baseGames/baseItem", restify.bodyParser(), function (req, res, nex
   baseGame.description = item.description;
   console.log(baseGame)
 
+  // check GeoReference type for FFA
+  // cant be played if location is not the same
+  var ffaQuestions = [];
+  for (var i=0; i<item.tasks.length; i++) {
+    if (item.tasks[i].type != "GeoReference") {
+      ffaQuestions.push(item.tasks[i]);
+    }
+  };
+  // save questions of new game into FFA game
+  FFAGame.update(
+    { name: "Open World OriGami" },
+    { $push: { questions: { $each: ffaQuestions } } },
+    function (err, data) {
+      if (err) {
+        console.log("error at updating FFA game");
+      } else {
+        console.log("updated FFA game questions");
+      }
+  });
+
   baseGame.save(baseGame, function (err, data) {
       console.log("basegamesave");
     res.writeHead(200, {
