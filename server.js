@@ -623,7 +623,7 @@ server.post('/FFABaseSave', restify.bodyParser(), function (req, res, next) {
 // })
 
 // Get only one certain game created by user
-server.get("/FFAGame/item/:baseName", function (req, res, next) {
+server.get("/FFAGame/item", function (req, res, next) {
   console.log(req.params.baseName);
   FFAGame.find(function (err, ffa) {
     res.writeHead(200, {
