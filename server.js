@@ -758,6 +758,15 @@ server.get('/profile/:userName', function(req, res){
         });
 });
 
+server.get('/profileSearch/:email', auth,  function(req, res){
+  console.log("find user with mail")
+    User.findOne({email: req.params.email})
+        .then(function(data){
+          console.log("found user")
+            res.send(200, data)
+        });
+});
+
 server.post('/profileUpdate', restify.bodyParser(), auth, function(req, res) {
     if (!req.payload._id) {
         res.send(401, {
