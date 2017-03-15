@@ -135,10 +135,7 @@ server.get("/games", function (req, res, next) {
 server.post("/games/item", restify.bodyParser(), function (req, res, next) {
   var item = req.params;
   console.log("games_item");
-  console.log(item);
   db.games.save(item, function (err, data) {
-    console.log("data");
-    console.log(data);
     res.writeHead(200, {
       'Content-Type': 'application/json; charset=utf-8'
     });
@@ -261,8 +258,6 @@ server.post("/data/img/upload", upload, function(req, res, next) {
 
 server.post("/games/player", restify.bodyParser(), function (req, res, next) {
   var item = req.params;
-  console.log("player_item");
-  console.log(item);
   var query = { _id: item.id };
   var playerInfo = item.playerInfo;
   db.games.update(query, {$push : {players : playerInfo}} , function (err, data) {
@@ -286,7 +281,6 @@ server.post("/games/player", restify.bodyParser(), function (req, res, next) {
 server.get('/baseGames', function (req, res, next) {
     console.log('find all basegames')
   BaseGame.find(function (err, games) {
-    console.log("found game")
     res.writeHead(200, {
       'Content-Type': 'application/json;charset=utf-8'
     });
@@ -322,11 +316,9 @@ server.get("/baseGames/baseItem/:baseUser/:baseName", function (req, res, next) 
 
 server.post("/baseGames/update", restify.bodyParser(), function(req, res){
     console.log("update the base")
-    console.log(req.body._id);
-    console.log(req.body);
+
     BaseGame.findByIdAndUpdate(req.body._id, req.body, {runValidators: true, upsert: true})
         .then(function (data) {
-            console.log(data);
                 res.send(200, data);
         })
 })
@@ -363,13 +355,10 @@ server.post("/baseGames/baseItem", restify.bodyParser(), function (req, res, nex
   baseGame.team = item.team;
   baseGame.mode = item.activities[0].type;
   baseGame.basekey = baseIDs;
-  console.log(item.tasks);
   baseGame.questions = item.tasks;
-  console.log(baseGame.questions)
   baseGame.creator = item.gameCreator;
   baseGame.uniqueKey = item.gameCreator + item.name;
   baseGame.description = item.description;
-  console.log(baseGame)
 
   // check GeoReference type for FFA
   // cant be played if location is not the same
@@ -401,28 +390,36 @@ server.post("/baseGames/baseItem", restify.bodyParser(), function (req, res, nex
   return next();
 });
 
-// // Delete certain game
-// server.del("/baseGames/baseItem/:name", function (req, res, next) {
-//   console.log("DELETE request for GAME [" + req.params.name + "] from HOST [" + req.headers.host + "]");
-//   BaseGame.remove({ 'name': req.params.name }, function (err, data) {
-//     res.writeHead(200, {
-//       'Content-Type': 'application/json; charset=utf-8'
-//     });
-//     res.end(JSON.stringify(data));
-//   });
-//   return next();
-// });
+// Delete certain baseGame
+server.del("/baseGames/baseItem/:name/:id/:creator/:bases", restify.bodyParser(), function (req, res, next) {
+  console.log("DELETE request for GAME [" + req.params.name + "] from HOST [" + req.headers.host + "]");
+  var baseIDs = req.params.bases.split("-");
+  var gameIdentifier = req.params.creator + req.params.name;
 
+  // // var i=1 because first value is undefined
+  for (var i=1; i<baseIDs.length; i++) {
+    Base.remove({ '_id': baseIDs[i] }, function (err, data) {
+      if (err) console.log(err);
+    });
+  }
 
-/*server.del("baseGames/baseItem/:id", function (req, res, next) {
-  Game.remove({ 'name': req.params.name }, function (err, data) {
+  User.update(
+    { games: gameIdentifier },
+    { $pull: { games: gameIdentifier } },
+    { multi: true },
+    function (err, data) {
+      if (err) console.log(err);
+    })
+
+  BaseGame.remove({ '_id': req.params.id }, function (err, data) {
+    if (err) console.log(err);
     res.writeHead(200, {
       'Content-Type': 'application/json; charset=utf-8'
     });
     res.end(JSON.stringify(data));
   });
   return next();
-});*/
+});
 
 // Get only game metadata from the database - getting all games was shown to be slow
 server.get("/baseGames/metadata", function (req, res, next) {
@@ -613,8 +610,6 @@ server.post('/FFABaseSave', restify.bodyParser(), function (req, res, next) {
     { name: "Open World OriGami" },
     { $set: { bases: req.params } },
     function (err, data) {
-    // console.log("data");
-    // console.log(data);
     res.writeHead(200, {
       'Content-Type': 'application/json; charset=utf-8'
     });
@@ -623,18 +618,8 @@ server.post('/FFABaseSave', restify.bodyParser(), function (req, res, next) {
   return next();
 });
 
-// server.get('/FFAGame/item/:name', function (req, res, next) {
-//     console.log("hi");
-//     var username = req.params.name;
-//     console.log("username - " + username);
-//     FFAGame.find(function (err, ffa) {
-//         res.send(200, ffa);
-//     });
-// })
-
 // Get only one certain game created by user
 server.get("/FFAGame/item", function (req, res, next) {
-  console.log(req.params.baseName);
   FFAGame.find(function (err, ffa) {
     res.writeHead(200, {
       'Content-Type': 'application/json; charset=utf-8'
