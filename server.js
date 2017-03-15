@@ -279,7 +279,6 @@ server.post("/games/player", restify.bodyParser(), function (req, res, next) {
 
 //Get all the games
 server.get('/baseGames', function (req, res, next) {
-    console.log('find all basegames')
   BaseGame.find(function (err, games) {
     res.writeHead(200, {
       'Content-Type': 'application/json;charset=utf-8'
@@ -315,7 +314,6 @@ server.get("/baseGames/baseItem/:baseUser/:baseName", function (req, res, next) 
 });
 
 server.post("/baseGames/update", restify.bodyParser(), function(req, res){
-    console.log("update the base")
 
     BaseGame.findByIdAndUpdate(req.body._id, req.body, {runValidators: true, upsert: true})
         .then(function (data) {
@@ -341,7 +339,6 @@ server.post("/baseGames/baseItem", restify.bodyParser(), function (req, res, nex
     base.gameID = item.gameCreator + item.name;
 
     base.save(base, function (err, data) {
-        console.log("basesave")
       res.writeHead(200, {
         'Content-Type': 'application/json; charset=utf-8'
       });
@@ -381,7 +378,6 @@ server.post("/baseGames/baseItem", restify.bodyParser(), function (req, res, nex
   });
 
   baseGame.save(baseGame, function (err, data) {
-      console.log("basegamesave");
     res.writeHead(200, {
       'Content-Type': 'application/json; charset=utf-8'
     });
@@ -423,7 +419,6 @@ server.del("/baseGames/baseItem/:name/:id/:creator/:bases", restify.bodyParser()
 
 // Get only game metadata from the database - getting all games was shown to be slow
 server.get("/baseGames/metadata", function (req, res, next) {
-  console.log("/baseGames/metadata");
   BaseGame.find({}, { name: 1, description: 1, timecompl: 1, difficulty: 1 }, function (err, data) {
     res.writeHead(200, {
       'Content-Type': 'application/json;charset=utf-8'
@@ -486,43 +481,27 @@ server.get("/baseData/img/:filename", function (req, res, next) {
   TODO in future: Resize image if size or dimensions are too big
 */
 server.post("/baseData/img/upload", upload, function(req, res, next) {
-  console.log("baseData/img/upload");
   var uploaded_file = res.req.file.path;
-  console.log("01");
   function process_image(uploaded_file, format, width, height, filesize) {
-    console.log("02 function");
     const ext_map = {'JPEG' : '.jpg', 'PNG' : '.png', 'GIF' : '.gif'};
     var uploaded_dir = path.dirname(uploaded_file)
     var basename = path.basename(uploaded_file)
     var md5sum = md5file.sync(uploaded_file);
     var new_file = uploaded_dir + path.sep + md5sum + ext_map[format];
-    console.log("03");
     if (fs.existsSync(new_file)) {
-      console.log("04");
       console.log('File "' + uploaded_file + '" is the same as "' + new_file + '". Removing the former.');
       fs.unlink(uploaded_file, function(err) {
         if (err) { console.log("05"); console.log("Error occurred when removing file ", uploaded_file); }
       });
     } else {
-      console.log("06");
       console.log("Renaming " + uploaded_file + " to " + new_file)
       fs.renameSync(uploaded_file, new_file)
     }
-    console.log("07");
     res.contentType = 'json';
     res.send(200, {'img_file': path.basename(new_file)}).end();
   }
-  console.log("08");
   /* Get image params from ImageMagick */
   im.identify( uploaded_file, function(err, features) {
-    console.log("09");
-    console.log("error");
-    console.log(err);
-    console.log(uploaded_file);
-    console.log(format);
-    console.log(width);
-    console.log(height);
-    console.log(size);
     if (err) throw err;
     var format = features['format'];
     var width = features['width'];
@@ -530,7 +509,6 @@ server.post("/baseData/img/upload", upload, function(req, res, next) {
     var size = features['filesize'];
     process_image(uploaded_file, format, width, height, size);
   });
-  console.log("10");
   return next();
 });
 
@@ -579,7 +557,6 @@ server.post('/baseUpdate', restify.bodyParser(), function(req, res){
 //****************************************************************************************
 
 server.get('/FFAGame', function (req, res, next) {
-  console.log("ffagame server");
     FFAGame.find(function (err, ffa) {
       res.writeHead(200, {
         'Content-Type': 'application/json;charset=utf-8'
@@ -759,7 +736,6 @@ server.get('/profile/:userName', function(req, res){
 });
 
 server.get('/profileSearch/:email', auth,  function(req, res){
-  console.log("find user with mail")
     User.findOne({email: req.params.email})
         .then(function(data){
           console.log("found user")
