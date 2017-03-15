@@ -19,7 +19,6 @@ require('./config/schema');
 var User = mongoose.model('User');
 var BaseGame = mongoose.model('BaseGame');
 var Base = mongoose.model('Base');
-var Team = mongoose.model('Team');
 var FFAGame = mongoose.model('FFAGame');
 
 var auth = jwt({
@@ -320,6 +319,17 @@ server.get("/baseGames/baseItem/:baseUser/:baseName", function (req, res, next) 
   });
   return next();
 });
+
+server.post("/baseGames/update", restify.bodyParser(), function(req, res){
+    console.log("update the base")
+    console.log(req.body._id);
+    console.log(req.body);
+    BaseGame.findByIdAndUpdate(req.body._id, req.body, {runValidators: true, upsert: true})
+        .then(function (data) {
+            console.log(data);
+                res.send(200, data);
+        })
+})
 
 // Add new game to the list
 server.post("/baseGames/baseItem", restify.bodyParser(), function (req, res, next) {

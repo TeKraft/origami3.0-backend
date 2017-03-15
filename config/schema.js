@@ -124,26 +124,6 @@ var baseSchema = new mongoose.Schema({
     }
 });
 
-var teamSchema = new mongoose.Schema({
-   name: {
-       type: String,
-       unique: true,
-       required: true
-   },
-   teammates: [{
-       type: String,
-       required: false
-   }],
-   owner: [{
-       type: String,
-       required: true
-   }],
-   base: [{
-       type: String,
-       required: false
-   }],
-});
-
 userSchema.methods.setPassword = function(password){
     this.salt = crypto.randomBytes(16).toString('hex');
     this.hash = crypto.pbkdf2Sync(password, this.salt, 1000, 64, 'sha1').toString('hex');
@@ -169,5 +149,4 @@ userSchema.methods.generateJwt = function() {
 var User = mongoose.model('User', userSchema);
 var BaseGame = mongoose.model('BaseGame', gameSchema);
 var Base = mongoose.model('Base', baseSchema);
-var Team = mongoose.model('Team', teamSchema);
 var FFAGame = mongoose.model('FFAGame', ffaSchema);
